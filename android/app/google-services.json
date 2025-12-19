@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "974455309607",
+    "project_id": "loginregister-d9eaf",
+    "storage_bucket": "loginregister-d9eaf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974455309607:android:d2a4e4b4250f0667b45502",
+        "android_client_info": {
+          "package_name": "com.example.wastewise"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "974455309607-c3s1qtb553bme50j3o19v1265h14f2qs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4qlcrDBoQUm9eDhhpFs-19gmdMBzm-nY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "974455309607-c3s1qtb553bme50j3o19v1265h14f2qs.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "974455309607-rt1ul1j9ge4eihebmv983t6j7o03jv4a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.wastewise"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
