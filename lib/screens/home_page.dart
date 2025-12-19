@@ -8,8 +8,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'dart:io' as io; // mobile only
+import 'dart:io' as io;
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -21,7 +20,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  late final List<Widget> _pages;
 
   String userLocation = "Fetching location...";
   int rewardPoints = 150;
@@ -36,13 +34,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _pages = [
-      _buildHomeUI(),
-      ProfilePage(user: widget.user),
-    ];
     _getUserLocation();
   }
 
+  /// ---------------- LOCATION ----------------
   Future<void> _getUserLocation() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       setState(() => userLocation = "Location disabled");
@@ -52,18 +47,18 @@ class _HomePageState extends State<HomePage> {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() => userLocation = "Permission denied");
-        return;
-      }
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      setState(() => userLocation = "Permission permanently denied");
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      setState(() => userLocation = "Permission denied");
       return;
     }
 
-    Position pos = await Geolocator.getCurrentPosition();
+    Position pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
     List<Placemark> placemarks =
         await placemarkFromCoordinates(pos.latitude, pos.longitude);
 
@@ -73,17 +68,27 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /// ---------------- PAGE SWITCH ----------------
+  Widget _getCurrentPage() {
+    if (_selectedIndex == 0) {
+      return _buildHomeUI();
+    }
+    return ProfilePage(user: widget.user);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _pages[_selectedIndex],
+      body: _getCurrentPage(),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,
         selectedItemColor: Colors.lightGreenAccent,
         unselectedItemColor: Colors.grey,
         currentIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+        },
         items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined), label: "Home"),
@@ -94,6 +99,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// ---------------- HOME UI ----------------
   Widget _buildHomeUI() {
     final username = widget.user.email!.split('@')[0];
 
@@ -105,14 +111,22 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 16),
           _userCard(username),
           const SizedBox(height: 30),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            _actionCard(Icons.schedule, "Schedule"),
-            GestureDetector(
-              onTap: _showRecycleOptions,
-              child: _actionCard(Icons.recycling, "Recycle"),
-            ),
-            _actionCard(Icons.lightbulb_outline, "Tips"),
-          ]),
+
+          /// 🔁 ORDER FIXED: Recycle → Schedule → Tips
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              GestureDetector(
+                onTap: _showRecycleOptions,
+                child: _actionCard(Icons.recycling, "Recycle"),
+              ),
+              _actionCard(Icons.schedule, "Report"),
+              _actionCard(Icons.lightbulb_outline, "Tips"),
+            ],
+          ),
+
+          const SizedBox(height: 30),
+          _recyclePointsSection(),
         ]),
       ),
     );
@@ -123,15 +137,18 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient:
-            const LinearGradient(colors: [Color(0xFF0F3D2E), Color(0xFF1C7C54)]),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F3D2E), Color(0xFF1C7C54)],
+        ),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text("Let's Recycle, $username!",
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold)),
+        Text(
+          "Let's Recycle, $username!",
+          style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 10),
         Text("Reward Points: $rewardPoints",
             style: const TextStyle(color: Colors.white70)),
@@ -177,6 +194,51 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// ---------------- RECYCLE POINTS ----------------
+  Widget _recyclePointsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Recycle Points",
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 14),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+          children: const [
+            _RecyclePointCard(
+                title: "Biodegradable",
+                points: "+50 Points",
+                icon: Icons.eco,
+                color: Color(0xFF2ECC71)),
+            _RecyclePointCard(
+                title: "Non-Biodegradable",
+                points: "+70 Points",
+                icon: Icons.delete_outline,
+                color: Color(0xFFE67E22)),
+            _RecyclePointCard(
+                title: "Recyclable",
+                points: "+100 Points",
+                icon: Icons.recycling,
+                color: Color(0xFF1ABC9C)),
+            _RecyclePointCard(
+                title: "E-Waste",
+                points: "+150 Points",
+                icon: Icons.bolt,
+                color: Color(0xFF9B59B6)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// ---------------- IMAGE FLOW ----------------
   void _showRecycleOptions() {
     showModalBottomSheet(
       context: context,
@@ -286,6 +348,52 @@ class _HomePageState extends State<HomePage> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Image uploaded successfully")));
+      const SnackBar(content: Text("Image uploaded successfully")),
+    );
+  }
+}
+
+/// ---------------- POINT CARD ----------------
+class _RecyclePointCard extends StatelessWidget {
+  final String title;
+  final String points;
+  final IconData icon;
+  final Color color;
+
+  const _RecyclePointCard({
+    required this.title,
+    required this.points,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1C),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 12),
+          Text(title,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600)),
+          const Spacer(),
+          Text(points,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
   }
 }
