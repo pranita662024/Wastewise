@@ -79,7 +79,7 @@ flutter:
   -  assets/google_logo.png
   -  assets/bg.png
   -  assets/splash.png
-  -  assets/wastewise_logo.jpg
+  -  assets/wastewise_logo.png
   -  assets/model/Wastewise_model.tflite
 
   #   - images/a_dot_ham.jpeg

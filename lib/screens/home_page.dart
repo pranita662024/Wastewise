@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wastewise/screens/profile_page.dart';
+import 'package:wastewise/screens/report_waste_page.dart'; // ✅ ADDED
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
@@ -107,12 +108,25 @@ class _HomePageState extends State<HomePage> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _locationChip(),
+
+          /// ✅ LOCATION LEFT + LOGO RIGHT (ONLY ADDITION)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _locationChip(),
+              Image.asset(
+                'assets/wastewise_logo.png',
+                height: 40,
+                width: 40,
+              ),
+            ],
+          ),
+
           const SizedBox(height: 16),
           _userCard(username),
           const SizedBox(height: 30),
 
-          /// 🔁 ORDER FIXED: Recycle → Schedule → Tips
+          /// 🔁 SAME ORDER, ONLY REPORT TAP ADDED
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -120,7 +134,19 @@ class _HomePageState extends State<HomePage> {
                 onTap: _showRecycleOptions,
                 child: _actionCard(Icons.recycling, "Recycle"),
               ),
-              _actionCard(Icons.schedule, "Report"),
+
+              /// ✅ REPORT FLOW ADDED
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ReportWastePage()),
+                  );
+                },
+                child: _actionCard(Icons.schedule, "Report"),
+              ),
+
               _actionCard(Icons.lightbulb_outline, "Tips"),
             ],
           ),
@@ -194,7 +220,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// ---------------- RECYCLE POINTS ----------------
+  /// ---------------- RECYCLE POINTS (UNCHANGED) ----------------
   Widget _recyclePointsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +264,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// ---------------- IMAGE FLOW ----------------
+  /// ---------------- IMAGE FLOW (UNCHANGED) ----------------
   void _showRecycleOptions() {
     showModalBottomSheet(
       context: context,
