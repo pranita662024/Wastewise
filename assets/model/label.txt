@@ -1,0 +1,4 @@
+0 Bio-degradable
+1 Non-biodegradable
+2 E-waste
+3 Recyclable

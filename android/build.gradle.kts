@@ -31,3 +31,14 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+subprojects {
+    // This looks at every plugin/module in your project
+    plugins.withType<com.android.build.gradle.api.AndroidBasePlugin> {
+        val android = extensions.getByName("android") as com.android.build.gradle.BaseExtension
+        if (android.namespace == null) {
+            // Assigns a namespace to older plugins like tflite_v2
+            android.namespace = project.group.toString()
+        }
+    }
+}

@@ -5,12 +5,16 @@ import 'firebase_options.dart';
 import 'screens/splash_page.dart';
 import 'screens/login_page.dart';
 import 'screens/home_page.dart';
+import 'package:wastewise/services/classifier.dart';
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await WasteClassifier.loadModel();
   runApp(const MyApp());
 }
 

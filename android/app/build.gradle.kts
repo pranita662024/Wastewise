@@ -17,10 +17,18 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // Add this block inside 'android'
+    aaptOptions {
+        noCompress("tflite") 
+        noCompress("lite")
+    }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    
+    // ... rest of your code
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
